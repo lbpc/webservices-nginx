@@ -17,7 +17,7 @@ private_hostname = socket.dns.tohostname(private_ip)
 if not private_hostname then private_hostname = socket.dns.gethostname() end
 s:close()
 
-ngx.log(ngx.INFO, 'Public IP: ' .. public_ip)
-ngx.log(ngx.INFO, 'Public hostname: ' .. public_hostname)
-ngx.log(ngx.INFO, 'Private IP: ' .. private_ip)
-ngx.log(ngx.INFO, 'Private hostname: ' .. private_hostname)
+ngx.log(ngx.INFO, 'public IP: ' .. public_ip)
+ngx.log(ngx.INFO, 'public hostname: ' .. public_hostname)
+ngx.log(ngx.INFO, 'private IP: ' .. private_ip)
+ngx.log(ngx.INFO, 'private hostname: ' .. private_hostname)

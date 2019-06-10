@@ -1,12 +1,6 @@
 with import <nixpkgs> {
   overlays = [
     (import (builtins.fetchGit { url = "git@gitlab.intr:_ci/nixpkgs.git"; ref = "master"; }))
-    (self: super: {
-      glibcLocales = super.glibcLocales.override {
-        allLocales = false;
-        locales = [ "en_US.UTF-8/UTF-8" "ru_RU.UTF-8/UTF-8" ];
-      };
-    })
   ];
 };
 
@@ -17,6 +11,11 @@ inherit (dockerTools) buildLayeredImage;
 inherit (lib) concatMapStringsSep firstNChars flattenSet dockerRunCmd;
 inherit (stdenv) mkDerivation;
 
+locales = glibcLocales.override {
+  allLocales = false;
+  locales = [ "en_US.UTF-8/UTF-8" "ru_RU.UTF-8/UTF-8" ];
+};
+
 nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard develkit ]; in
   mkDerivation rec {
     name = "nginx-${version}";
@@ -26,6 +25,7 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
       sha256 = "0i8krbi1pc39myspwlvb8ck969c8207hz84lh3qyg5w7syx7dlsg";
     };
     buildInputs = [ openssl zlib pcre ] ++ concatMap (mod: mod.inputs or []) modules;
+    patches = [ ./configure.patch ];
     configureFlags = [
       "--with-http_ssl_module"
       "--with-http_realip_module"
@@ -74,6 +74,7 @@ nginxConfLayer = with luajitPackages; mkDerivation rec {
   buildInputs = [ nginx mjHttpErrorPages pandoc ] ++ luaPackages;
   luaPath = concatMapStringsSep ";" (p: getLuaPath p) luaPackages;
   luaCPath = concatMapStringsSep ";" (p: getLuaCPath p) luaPackages;
+  phases = [ "unpackPhase" "buildPhase" "installPhase" ];
   buildPhase = ''
     cp -r ${mjHttpErrorPages}/html .
     cp ${nginx}/conf/mime.types conf
@@ -97,8 +98,10 @@ dockerArgHints = {
   read_only = true;
   network = "host";
   volumes = [
+    ({ type = "bind"; source = "/etc/nginx/ssl.key"; target = "/read/ssl"; })
     ({ type = "bind"; source = "/etc/nginx"; target = "/read"; read_only = true; })  
     ({ type = "bind"; source = "/home"; target = "/home"; read_only = true; })
+    ({ type = "tmpfs"; target = "/home/nginx"; })
     ({ type = "tmpfs"; target = "/run"; })
   ];
 };
@@ -110,8 +113,8 @@ in
 buildLayeredImage rec {
   name = "docker-registry.intr/webservices/nginx";
   tag = if gitAbbrev != "" then gitAbbrev else "latest";
-  maxLayers = 128;
-  contents = [ nginx nginxConfLayer glibcLocales tzdata ];
+  maxLayers = 20;
+  contents = [ nginx nginxConfLayer tzdata locales ];
   extraCommands=''
     mkdir -p {etc/nginx,usr/share/nginx/html,var/log/nginx}
     echo 'root:x:0:0:root:/run:' > etc/passwd
@@ -130,7 +133,7 @@ buildLayeredImage rec {
       "TZ=Europe/Moscow"
       "TZDIR=/share/zoneinfo"
       "LC_ALL=en_US.UTF-8"
-      "LOCALE_ARCHIVE_2_27=${glibcLocales}/lib/locale/locale-archive"
+      "LOCALE_ARCHIVE_2_27=${locales}/lib/locale/locale-archive"
     ];
     Labels = flattenSet rec {
       ru.majordomo.docker.arg-hints-json = toJSON dockerArgHints;
