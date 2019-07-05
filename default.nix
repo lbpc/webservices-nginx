@@ -128,6 +128,7 @@ buildLayeredImage rec {
     ln -sf /lua/anti_ddos_check_cookie_file.lua usr/share/nginx/html/anti_ddos_check_cookie_file.lua
     ln -sf /lua/anti_ddos_set_cookie_file.lua usr/share/nginx/html/anti_ddos_set_cookie_file.lua
     ln -sf /read/sites-available etc/nginx/sites-available
+    touch 1
   '';
   config = {
     Entrypoint = [ "${nginx}/bin/nginx" "-g" "daemon off;" "-p" "${nginxConfLayer}" ];
