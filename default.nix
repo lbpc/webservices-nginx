@@ -98,10 +98,11 @@ dockerArgHints = {
   read_only = true;
   network = "host";
   volumes = [
-    ({ type = "bind"; source = "/etc/nginx/ssl.key"; target = "/read/ssl"; })
-    ({ type = "bind"; source = "/etc/nginx"; target = "/read"; read_only = true; })  
+    ({ type = "bind"; source = "/opt/nginx/conf"; target = "/read/conf"; read_only = true; })  
+    ({ type = "bind"; source = "/etc/nginx/ssl.key"; target = "/read/ssl"; read_only = true; })
+    ({ type = "bind"; source = "/etc/nginx/sites-available"; target = "/read/sites"; read_only = true; })
+    ({ type = "bind"; source = "/home/nginx"; target = "/write/cache"; })
     ({ type = "bind"; source = "/home"; target = "/home"; read_only = true; })
-    ({ type = "tmpfs"; target = "/home/nginx"; })
     ({ type = "tmpfs"; target = "/run"; })
   ];
 };
@@ -126,6 +127,7 @@ buildLayeredImage rec {
     done
     ln -sf /lua/anti_ddos_check_cookie_file.lua usr/share/nginx/html/anti_ddos_check_cookie_file.lua
     ln -sf /lua/anti_ddos_set_cookie_file.lua usr/share/nginx/html/anti_ddos_set_cookie_file.lua
+    ln -sf /read/sites-available etc/nginx/sites-available
   '';
   config = {
     Entrypoint = [ "${nginx}/bin/nginx" "-g" "daemon off;" "-p" "${nginxConfLayer}" ];
