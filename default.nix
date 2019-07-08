@@ -52,7 +52,7 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
       "--http-log-path=/dev/stdout"
       "--pid-path=/run/nginx.pid"
       "--lock-path=/run/nginx.lock"
-      "--http-client-body-temp-path=/run/client_body_temp"
+      "--http-client-body-temp-path=/run/client_body_tmp"
       "--http-proxy-temp-path=/run/proxy_temp"
     ] ++ map (mod: "--add-module=${mod.src}") modules; 
     preConfigure = (concatMapStringsSep "\n" (mod: mod.preConfigure or "") modules);
