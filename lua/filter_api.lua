@@ -1,9 +1,11 @@
 require "resty.core"
+local resolver = require "resty.dns.resolver"
 local math = require "math"
 local filter_table = ngx.shared.filter_table
 local method = ngx.req.get_method()
 local act_map = {setCookie = 0, return403 = 1, connReset = 2}
 local _, addr = ngx.var.uri:match("/(.-)/(.+)")
+local spiders_domains = {"yandex.ru", "yandex.net", "yandex.com", "googlebot.com", "google.com"}
 local auth_token = "w5iwLomy2okyHDFLUiTimSuk84VLtY70pfiI"
 
 local function valid_ip(ip)
@@ -23,6 +25,7 @@ local function valid_ip(ip)
 end
 
 local function valid_set_req(addr, action, ttl)
+  local dns = resolver:new{nameservers = {'172.16.103.2', '172.16.102.2'}}
   local ttl = tonumber(ttl)
   if not ttl then
     return false, "ttl must be a number"
@@ -44,6 +47,16 @@ local function valid_set_req(addr, action, ttl)
   end
   if addr == ngx.var.remote_addr then
     return false, "so, you are asking me to block your own address. are you sane?"
+  end
+  local ptrs = dns:reverse_query(addr)
+  for _, ptr in ipairs(ptrs) do
+    if ptr and ptr.ptrdname then
+      for _, domain in ipairs(spiders_domains) do
+        if string.find(ptr.ptrdname, "." .. domain .. "$") then
+          return false, addr .. "'s PTR is " .. ptr.ptrdname
+        end
+      end
+    end
   end
   return true, nil
 end
