@@ -5,7 +5,7 @@ local filter_table = ngx.shared.filter_table
 local method = ngx.req.get_method()
 local act_map = {setCookie = 0, return403 = 1, connReset = 2}
 local _, addr = ngx.var.uri:match("/(.-)/(.+)")
-local spiders_domains = {"yandex.ru", "yandex.net", "yandex.com", "googlebot.com", "google.com"}
+local spiders_domains = {"yandex.ru", "yandex.net", "yandex.com", "googlebot.com", "google.com", "mail.ru", "msn.com"}
 local auth_token = "w5iwLomy2okyHDFLUiTimSuk84VLtY70pfiI"
 
 local function valid_ip(ip)
