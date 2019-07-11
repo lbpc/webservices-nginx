@@ -140,7 +140,7 @@ elseif method == "PUT" then
     ngx.status = ngx.HTTP_UNAUTHORIZED
     ngx.say(reason)
   else
-    filter_table:set(addr, act_map[action], ttl)
+    filter_table:set(addr, act_map[action], tonumber(ttl))
     ngx.log(ngx.WARN, addr .. " added to filtering table for " .. ttl .. " seconds, action: " .. action)
   end
   ngx.exit(ngx.HTTP_OK)
