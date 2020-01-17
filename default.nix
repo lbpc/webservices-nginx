@@ -39,8 +39,6 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
       "--with-http_stub_status_module"
       "--without-http_geo_module"
       "--without-http_empty_gif_module"
-      "--without-http_fastcgi_module"
-      "--without-http_uwsgi_module"
       "--without-http_scgi_module"
       "--without-http_grpc_module"
       "--without-http_memcached_module"
@@ -54,6 +52,8 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
       "--lock-path=/run/nginx.lock"
       "--http-client-body-temp-path=/run/client_body_temp"
       "--http-proxy-temp-path=/run/proxy_temp"
+      "--http-fastcgi-temp-path=/run/fastcgi_temp"
+      "--http-uwsgi-temp-path=/run/uwsgi_temp"
     ] ++ map (mod: "--add-module=${mod.src}") modules; 
     preConfigure = (concatMapStringsSep "\n" (mod: mod.preConfigure or "") modules);
     hardeningEnable = [ "pie" ];
