@@ -6,9 +6,9 @@ with import <nixpkgs> {
 
 let
   
-inherit (builtins) concatMap getEnv toJSON;
+inherit (builtins) concatMap getEnv toJSON foldl';
 inherit (dockerTools) buildLayeredImage;
-inherit (lib) concatMapStringsSep firstNChars flattenSet dockerRunCmd;
+inherit (lib) concatMapStringsSep firstNChars flattenSet dockerRunCmd unique;
 inherit (stdenv) mkDerivation;
 
 locales = glibcLocales.override {
@@ -39,8 +39,6 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
       "--with-http_stub_status_module"
       "--without-http_geo_module"
       "--without-http_empty_gif_module"
-      "--without-http_fastcgi_module"
-      "--without-http_uwsgi_module"
       "--without-http_scgi_module"
       "--without-http_grpc_module"
       "--without-http_memcached_module"
@@ -54,6 +52,8 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
       "--lock-path=/run/nginx.lock"
       "--http-client-body-temp-path=/run/client_body_temp"
       "--http-proxy-temp-path=/run/proxy_temp"
+      "--http-fastcgi-temp-path=/run/fastcgi_temp"
+      "--http-uwsgi-temp-path=/run/uwsgi_temp"
     ] ++ map (mod: "--add-module=${mod.src}") modules; 
     preConfigure = (concatMapStringsSep "\n" (mod: mod.preConfigure or "") modules);
     hardeningEnable = [ "pie" ];
@@ -66,14 +66,15 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
     '';
 };
 
-nginxConfLayer = with luajitPackages; mkDerivation rec {
+nginxConfLayer = with openrestyPackages; mkDerivation rec {
   name = "mj-nginx-config";
   srcs = [ ./lua ./conf ./doc ];
   sourceRoot = ".";
-  luaPackages = [ luaRestyCore luaRestyLrucache luaRestyDns luasocket ];
-  buildInputs = [ nginx mjHttpErrorPages pandoc ] ++ luaPackages;
-  luaPath = concatMapStringsSep ";" (p: getLuaPath p) luaPackages;
-  luaCPath = concatMapStringsSep ";" (p: getLuaCPath p) luaPackages;
+  luaPackages = [ lua-resty-core lua-resty-dns luasocket ];
+  luaPackagesWithDeps = unique ((foldl' (a: b: a ++ b.requiredLuaModules ) luaPackages) luaPackages);
+  buildInputs = [ nginx mjHttpErrorPages pandoc ] ++ luaPackagesWithDeps;
+  luaPath = concatMapStringsSep ";" getLuaPath luaPackagesWithDeps;
+  luaCPath = concatMapStringsSep ";" getLuaCPath luaPackagesWithDeps;
   phases = [ "unpackPhase" "buildPhase" "installPhase" ];
   buildPhase = ''
     cp -r ${mjHttpErrorPages}/html .
@@ -113,6 +114,7 @@ in
 
 buildLayeredImage rec {
   name = "docker-registry.intr/webservices/nginx";
+  topLayer = nginxConfLayer;
   tag = if gitAbbrev != "" then gitAbbrev else "latest";
   maxLayers = 20;
   contents = [ nginx nginxConfLayer tzdata locales ];
