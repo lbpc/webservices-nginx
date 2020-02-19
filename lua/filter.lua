@@ -6,15 +6,16 @@ if not ngx.re.find(ngx.req.get_method(), '^(GET|POST|HEAD|PUT|DELETE|CONNECT|OPT
   ngx.exit(ngx.HTTP_OK)
 end
 local act = ngx.shared.filter_table:get(ngx.var.remote_addr)
-local matched = ngx.var.header_filter_iregex and ngx.re.find(ngx.var.request_uri .. (ngx.req.get_headers()['User-Agent'] or ''), ngx.var.header_filter_iregex, 'sio')
+-- local matched = ngx.var.header_filter_iregex and ngx.re.find(ngx.var.request_uri .. (ngx.req.get_headers()['User-Agent'] or ''), ngx.var.header_filter_iregex, 'sio')
 
-if not act and not matched then
+if not act then
   return
 else
   act = act or 0
   ngx.var.filter_passed = 0 
   ngx.var.filter_action = act
-  ngx.var.filter_reason = tonumber(matched) and 'regex' or 'ip'
+--  ngx.var.filter_reason = tonumber(matched) and 'regex' or 'ip'
+  ngx.var.filter_reason = 'ip' 
 end
 
 if act == 0 then
