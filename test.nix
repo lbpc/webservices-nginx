@@ -189,5 +189,13 @@ in maketestNginx {
       command = runCurlGrep " -s -o /dev/null  -w '%{http_code}' 127.0.0.1/doc/ip-filter.html" "200";
     })
 
+# nginx-module-vts
+    (dockerNodeTest {
+      description = "test nginx-module-vts ";
+      action = "succeed";
+      command = "curl -s  127.0.0.1/status/format/json | jq .sharedZones.name | grep vhost_traffic_status";
+    })
+
+
   ];
 }  { } 
