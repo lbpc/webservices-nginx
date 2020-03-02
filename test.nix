@@ -196,6 +196,10 @@ in maketestNginx {
       command = "curl -s  127.0.0.1/status/format/json | jq .sharedZones.name | grep vhost_traffic_status";
     })
 
-
+    (dockerNodeTest {
+      description = "reload";
+      action = "succeed";
+      command = "${reloadNginx}";
+    })
   ];
 }  { } 
