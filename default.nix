@@ -50,12 +50,6 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
       "--user=root"
       "--error-log-path=/dev/stderr"
       "--http-log-path=/dev/stdout"
-      "--pid-path=/run/nginx.pid"
-      "--lock-path=/run/nginx.lock"
-      "--http-client-body-temp-path=/run/client_body_temp"
-      "--http-proxy-temp-path=/run/proxy_temp"
-      "--http-fastcgi-temp-path=/run/fastcgi_temp"
-      "--http-uwsgi-temp-path=/run/uwsgi_temp"
     ] ++ map (mod: "--add-module=${mod.src}") modules; 
     preConfigure = (concatMapStringsSep "\n" (mod: mod.preConfigure or "") modules);
     hardeningEnable = [ "pie" ];
@@ -106,7 +100,8 @@ dockerArgHints = {
     ({ type = "bind"; source = "/etc/nginx/sites-available"; target = "/read/sites"; read_only = true; })
     ({ type = "bind"; source = "/home/nginx"; target = "/write/cache"; })
     ({ type = "bind"; source = "/home"; target = "/home"; read_only = true; })
-    ({ type = "tmpfs"; target = "/run"; })
+    ({ type = "tmpfs"; target = "/var/run"; })
+    ({ type = "tmpfs"; target = "/var/spool/nginx"; })
   ];
 };
 
@@ -134,7 +129,7 @@ buildLayeredImage rec {
     ln -sf /read/sites-available etc/nginx/sites-available
   '';
   config = {
-    Entrypoint = [ "${nginx}/bin/nginx" "-g" "daemon off;" "-p" "${nginxConfLayer}" ];
+    Entrypoint = [ "${nginx}/bin/nginx" "-g" "daemon off; pid /var/run/nginx.pid;" "-p" "${nginxConfLayer}" ];
     Env = [
       "TZ=Europe/Moscow"
       "TZDIR=/share/zoneinfo"
