@@ -51,6 +51,17 @@ in maketestNginx {
       action = "succeed";
       command = runCurlGrep "127.0.0.1" "majordomo";
     })
+    (dockerNodeTest {
+      description = "502 test";
+      action = "succeed";
+      command = runCurlGrep "-H 'Host: test.ru' 127.0.0.1" "' 502'";
+    })
+    (dockerNodeTest {
+      description = "502 mj-error test";
+      action = "succeed";
+      command = runCurlGrep "-H 'Host: test.ru' 127.0.0.1" "majordomo";
+    })
+
 
 #setCockie tests
 
