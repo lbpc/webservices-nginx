@@ -8,7 +8,7 @@ with import <nixpkgs> {
 
 let
   image = callPackage ./default.nix  { inherit ref; };
-  keydir = (fetchGit {url = "git@gitlab.intr:office/ssl-certificates"; ref = "master";}).outPath;
+  keydir = (fetchGit {url = "git@gitlab.intr:office/ssl-certificates"; ref = "master";}).outPath + "/ssl" ;
   confdir = ./tests/conf;
   reloadNginx = writeScript "reloadNginx.sh" ''
   #!/bin/sh -eux                                                                                                                                                                           
