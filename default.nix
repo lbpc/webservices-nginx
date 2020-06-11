@@ -21,10 +21,10 @@ locales = glibcLocales.override {
 nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard develkit ]; in
   mkDerivation rec {
     name = "nginx-${version}";
-    version = "1.16.1";
+    version = "1.18.0";
     src = fetchurl {
       url = "https://nginx.org/download/nginx-${version}.tar.gz";
-      sha256 = "0az3vf463b538ajvaq94hsz9ipmjgnamfj1jy0v5flfks5njl77i";
+      sha256 = "16azscl74ym1far0s0p6xsjin1k1cm4wk80i9x5d74dznmx3wdsc";
     };
     buildInputs = [ openssl zlib pcre ] ++ concatMap (mod: mod.inputs or []) modules;
     patches = [ ./configure.patch ];
