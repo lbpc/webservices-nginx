@@ -77,9 +77,11 @@ nginxConfLayer = with openrestyPackages; mkDerivation rec {
     cp ${nginx}/conf/mime.types conf
     chmod +w html
     mkdir html/doc
-    pandoc --self-contained -s --toc -f markdown -t html5 -c doc/md.css \
-      --metadata pagetitle="IP filter" \
-      -o html/doc/ip-filter.html doc/ip-filter.md
+    for each in doc/*.md; do
+      pandoc --self-contained -s --toc -f markdown -t html5 -c doc/md.css \
+        --metadata pagetitle="IP filter" \
+        -o html/''${each%%.*}.html $each
+    done
     for each in conf/*; do
       substituteAllInPlace $each
     done
