@@ -29,6 +29,7 @@ if act == 0 then
     return
   elseif ngx.var.uri == '/robots.txt' then
     ngx.status = ngx.HTTP_SERVICE_UNAVAILABLE
+    ngx.say('User-agent: *\nDisallow: /')
     ngx.exit(ngx.HTTP_OK)
   else
     ngx.header.content_type = 'text/html'
