@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectPlainTextFileTypeManager">
+    <file url="file://$PROJECT_DIR$/conf/cache.conf" />
+    <file url="file://$PROJECT_DIR$/conf/errors.conf" />
+    <file url="file://$PROJECT_DIR$/conf/gzip.conf" />
+    <file url="file://$PROJECT_DIR$/conf/lua.conf" />
+    <file url="file://$PROJECT_DIR$/conf/nginx.conf" />
+    <file url="file://$PROJECT_DIR$/conf/proxy.conf" />
+    <file url="file://$PROJECT_DIR$/conf/ssl.conf" />
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="Python 3.4.3 (/usr/bin/python3)" project-jdk-type="Python SDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

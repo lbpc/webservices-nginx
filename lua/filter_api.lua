@@ -1,7 +1,7 @@
 require "resty.core"
 local resolver = require "resty.dns.resolver"
 local math = require "math"
-local filter_table = ngx.shared.filter_table
+local ip_filter_table = ngx.shared.ip_filter_table
 local method = ngx.req.get_method()
 local act_map = {setCookie = 0, return403 = 1, connReset = 2}
 local _, addr = ngx.var.uri:match("/(.-)/(.+)")
@@ -104,17 +104,17 @@ ngx.header.content_type = "text/plain"
 if method == "GET" then
   local res = nil
   if addr then
-    res = filter_table:get(addr)
+    res = ip_filter_table:get(addr)
   else
-    res = filter_table:get_keys(0)
+    res = ip_filter_table:get_keys(0)
   end
   if type(res) == "table" then
     for _, addr in pairs(res) do
-      local ttl = filter_table:ttl(addr)
-      ngx.say(addr .. " " .. math.floor(ttl) .. " " .. action_name(filter_table:get(addr)))
+      local ttl = ip_filter_table:ttl(addr)
+      ngx.say(addr .. " " .. math.floor(ttl) .. " " .. action_name(ip_filter_table:get(addr)))
     end
   elseif res then
-    local ttl = filter_table:ttl(addr)
+    local ttl = ip_filter_table:ttl(addr)
     ngx.say(math.floor(ttl) .. " " .. action_name(res))
   else
     ngx.status = ngx.HTTP_NOT_FOUND
@@ -122,7 +122,7 @@ if method == "GET" then
   ngx.exit(ngx.HTTP_OK)
 elseif method == "DELETE" then
   if valid_ip(addr) then
-    filter_table:delete(addr)
+    ip_filter_table:delete(addr)
     ngx.log(ngx.WARN, addr .. " removed from filtering table")
   else
     ngx.status = ngx.HTTP_BAD_REQUEST
@@ -142,7 +142,7 @@ elseif method == "PUT" then
     ngx.status = ngx.HTTP_UNAUTHORIZED
     ngx.say(reason)
   else
-    filter_table:set(addr, act_map[action], tonumber(ttl))
+    ip_filter_table:set(addr, act_map[action], tonumber(ttl))
     ngx.log(ngx.WARN, addr .. " added to filtering table for " .. ttl .. " seconds, action: " .. action)
   end
   ngx.exit(ngx.HTTP_OK)
@@ -167,7 +167,7 @@ elseif method == "POST" then
   if ngx.status ~= ngx.HTTP_BAD_REQUEST then
     for line in data:gmatch(".-\n") do
       local args = extract_set_val(line)
-      filter_table:set(args["addr"], act_map[args["action"]], args["ttl"])
+      ip_filter_table:set(args["addr"], act_map[args["action"]], args["ttl"])
       ngx.log(ngx.WARN, args["addr"] .. " added to filtering table for " .. args["ttl"] .. " seconds, action: " .. args["action"])
     end
   end
