@@ -192,6 +192,83 @@ in maketestNginx {
       command = "sleep 3 && curl --interface 127.0.0.2 -s 127.0.0.1/ip-filter/";
     })
 
+#host-protect tests
+
+    (dockerNodeTest {
+      description = "generate test.ru html content";
+      action = "succeed";
+      command = "mkdir -p /home/u12/testru/www/ ; echo 'hello from nix-test' > /home/u12/testru/www/index.html";
+    })
+    (dockerNodeTest {
+      description = "list host's in host-protected location";
+      action = "succeed";
+      command = "curl -s 127.0.0.1/protected";
+    })
+    (dockerNodeTest {
+      description = "test vhost without protection";
+      action = "succeed";
+      command = runCurlGrep "-H 'Host: test.ru' 127.0.0.1/index.html" "'hello'";
+    })
+    (dockerNodeTest {
+      description = "add test.ru host to host-protected location";
+      action = "succeed";
+      command = "curl -XPUT 127.0.0.1/protected/test.ru";
+    })
+    (dockerNodeTest {
+      description = "list test.ru in protected sites" ;
+      action = "succeed";
+      command = runCurlGrep "127.0.0.1/protected" "test.ru";
+    })
+    (dockerNodeTest {
+      description = "curl test protection";
+      action = "succeed";
+      command = runCurlGrep "-H 'Host: test.ru' 127.0.0.1/index.html" "'mj_anti_flood'";
+    })
+
+
+
+#[0713/134021.919133:ERROR:headless_shell.cc(482)] Failed to serialize document: Uncaught
+#    (dockerNodeTest {
+#      description = "test protection with chromium";
+#      action = "succeed";
+#      command = "google-chrome-stable --no-sandbox --headless --dump-dom http://test.ru/index.html  | grep hello";
+#    })
+
+#    (dockerNodeTest {
+#      description = "test protection with firefox";
+#      action = "succeed";
+#      command = "strace -f -s 10000 firefox --screenshot=/dev/null --headless http://test.ru/index.html  | grep hello";
+#    })
+
+    (dockerNodeTest {
+      description = "test protection with chromium";
+      action = "succeed";
+      command = "strace -f -s 10000 google-chrome-stable --no-sandbox --headless --dump-dom http://test.ru/index.html 2>&1 | grep hello";
+    })
+
+
+    (dockerNodeTest {
+      description = "delete test.ru from host-protected location";
+      action = "succeed";
+      command = "curl -XDELETE 127.0.0.1/protected/test.ru";
+    })
+    (dockerNodeTest {
+      description = "test vhost without protection after delete";
+      action = "succeed";
+      command = runCurlGrep "-H 'Host: test.ru' 127.0.0.1/index.html" "'hello'";
+    })
+    (dockerNodeTest {
+      description = "add test.ru to protection 2seconds with Authorization";
+      action = "succeed";
+      command = "curl -s -i -H'Authorization: w5iwLomy2okyHDFLUiTimSuk84VLtY70pfiI' -XPUT '127.0.0.1/protected/test.ru?ttl=2'";
+    })
+    (dockerNodeTest {
+      description = "test from 127.0.0.2 ";
+      action = "succeed";
+      command = "sleep 3 && curl -H 'Host: test.ru' 127.0.0.1/index.html | grep hello ";
+    })
+
+
 # ip-fliter docs
 
     (dockerNodeTest {
@@ -199,6 +276,15 @@ in maketestNginx {
       action = "succeed";
       command = runCurlGrep " -s -o /dev/null  -w '%{http_code}' 127.0.0.1/doc/ip-filter.html" "200";
     })
+
+# host-protected docs
+
+    (dockerNodeTest {
+      description = "test host-protected docs ";
+      action = "succeed";
+      command = runCurlGrep " -s -o /dev/null  -w '%{http_code}' 127.0.0.1/doc/host-protection.html" "200";
+    })
+
 
 # nginx-module-vts
     (dockerNodeTest {
