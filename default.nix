@@ -29,6 +29,7 @@ nginx = with nginxModules; let modules = [ nginxLua nginxVts nginxSysGuard devel
     buildInputs = [ openssl zlib pcre ] ++ concatMap (mod: mod.inputs or []) modules;
     patches = [ ./configure.patch ];
     configureFlags = [
+      "--with-ld-opt='${jemalloc}/lib/libjemalloc.so'"
       "--with-http_ssl_module"
       "--with-http_realip_module"
       "--with-http_sub_module"
