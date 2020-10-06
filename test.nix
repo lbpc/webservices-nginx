@@ -1,44 +1,37 @@
-{ ref ? "master", debug ? false }:
-
-with import <nixpkgs> {
-  overlays = [
-    (import (builtins.fetchGit { url = "git@gitlab.intr:_ci/nixpkgs.git"; inherit ref  ; }))
-  ];
+with import (import ./channels.nix).nixpkgs {
+  overlays = (import ./channels.nix).overlays;
 };
 
 let
-  image = callPackage ./default.nix  { inherit ref; };
+  image = callPackage ./default.nix { };
   keydir = (fetchGit {url = "git@gitlab.intr:office/ssl-certificates"; ref = "master";}).outPath + "/ssl" ;
   confdir = ./tests/conf;
   reloadNginx = writeScript "reloadNginx.sh" ''
-  #!/bin/sh -eux                                                                                                                                                                           
-   ${docker}/bin/docker exec nginx ${(lib.importJSON (image.baseJson)).config.Labels."ru.majordomo.docker.exec.reload-cmd"} 
+  #!/bin/sh -eux
+   ${docker}/bin/docker exec nginx ${(lib.importJSON (image.baseJson)).config.Labels."ru.majordomo.docker.exec.reload-cmd"}
   '';
 
 in maketestNginx {
-  inherit image;
-  inherit debug;
-  inherit keydir;
-  inherit confdir;
+  inherit image keydir confdir;
   testSuite = [
     (dockerNodeTest {
       description = "ls configs";
       action = "succeed";
       command = "ls -la /opt/nginx/conf/default_server.conf && ls -la /opt/nginx/conf/upstreams.conf";
     })
-     (dockerNodeTest {                                                                                                                                                                      
-      description = "check for nginx container exists";                                                                                                                               
-      action = "succeed";                                                                                                                                                                   
+     (dockerNodeTest {
+      description = "check for nginx container exists";
+      action = "succeed";
       command = "docker ps -a | grep [n]ginx";
      })
-     (dockerNodeTest {                                                                                                                                                                      
-      description = "check for nginx container is running";                                                                                                                             
-      action = "succeed";                                                                                                                                                                   
+     (dockerNodeTest {
+      description = "check for nginx container is running";
+      action = "succeed";
       command = "docker ps | grep [n]ginx";
      })
-     (dockerNodeTest {                                                                                                                                                                      
-      description = "check nginx proccess";                                                                                                                                                 
-      action = "succeed";                                                                                                                                                                   
+     (dockerNodeTest {
+      description = "check nginx proccess";
+      action = "succeed";
       command = " ps aux | grep [n]ginx";
      })
     (dockerNodeTest {
@@ -299,4 +292,4 @@ in maketestNginx {
       command = "${reloadNginx}";
     })
   ];
-}  { } 
+}  { }
