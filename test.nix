@@ -3,7 +3,7 @@ with import (import ./channels.nix).nixpkgs {
 };
 
 let
-  image = callPackage ./default.nix { };
+  image = import ./default.nix;
   keydir = (fetchGit {url = "git@gitlab.intr:office/ssl-certificates"; ref = "master";}).outPath + "/ssl" ;
   confdir = ./tests/conf;
   reloadNginx = writeScript "reloadNginx.sh" ''

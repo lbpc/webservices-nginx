@@ -1,8 +1,6 @@
-{ pkgs ? (import ./channels.nix).nixpkgs {
+with import (import ./channels.nix).nixpkgs {
   overlays = (import ./channels.nix).overlays;
-} }:
-
-with pkgs;
+};
 
 let
   inherit (builtins) toJSON;
