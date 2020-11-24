@@ -14,11 +14,12 @@ in buildLayeredImage rec {
   tag = "latest";
   contents = [ nginx nginxConfLayer tzdata locales ];
   extraCommands = ''
-    mkdir -p {etc/nginx,usr/share/nginx/html,var/log/nginx}
+    mkdir -p {etc/nginx,usr/share/nginx/html,var/log/nginx,opt/nginx}
     echo 'root:x:0:0:root:/run:' > etc/passwd
     echo 'root:x:0:' > etc/group
     ln -sf /dev/stdout var/log/nginx/access.log
     ln -sf /read/ssl etc/nginx/ssl.key
+    ln -sf /read/ssl opt/nginx/ssl
     for f in html/*; do
       ln -sf /$f usr/share/nginx/html/$(basename $f)
     done

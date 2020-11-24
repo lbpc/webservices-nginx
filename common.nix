@@ -106,7 +106,7 @@ in rec {
       })
       ({
         type = "bind";
-        source = "/etc/nginx/ssl.key";
+        source = "/opt/nginx/ssl";
         target = "/read/ssl";
         read_only = true;
       })
