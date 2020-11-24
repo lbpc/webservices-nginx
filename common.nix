@@ -112,7 +112,7 @@ in rec {
       })
       ({
         type = "bind";
-        source = "/etc/nginx/sites-available";
+        source = "/opt/nginx/conf/sites-available";
         target = "/read/sites";
         read_only = true;
       })
