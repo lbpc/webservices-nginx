@@ -34,7 +34,7 @@ if act == 0 then
       ttl = ngx.shared.protection_table:ttl(ngx.var.host)
 	  descr = 'В данный момент сайт находится под защитой от автоматически сгенерированных запросов.'
     else
-      ttl = ngx.shared.ip_filter_table:get(ngx.var.remote_addr)
+      ttl = ngx.shared.ip_filter_table:ttl(ngx.var.remote_addr)
 	end
     ngx.status = ngx.HTTP_SERVICE_UNAVAILABLE
     ngx.header.Retry_After = math.floor(ttl)
