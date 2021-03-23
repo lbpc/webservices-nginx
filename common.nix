@@ -97,6 +97,7 @@ in rec {
     init = true;
     read_only = true;
     network = "host";
+    cap_add = [ "CAP_SYS_RESOURCE" ];
     volumes = [
       ({
         type = "bind";
