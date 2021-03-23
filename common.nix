@@ -1,6 +1,6 @@
-with import ((import ./channels.nix).nixpkgs) {
-  overlays = (import ./channels.nix).overlays;
-};
+{ pkgs }:
+
+with pkgs;
 
 let
   inherit (builtins) foldl';

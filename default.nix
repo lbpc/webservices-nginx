@@ -1,13 +1,16 @@
-with import (import ./channels.nix).nixpkgs {
+{ pkgs ? import (import ./channels.nix).nixpkgs {
   overlays = (import ./channels.nix).overlays;
-};
+}
+}:
+
+with pkgs;
 
 let
   inherit (builtins) toJSON;
   inherit (dockerTools) buildLayeredImage;
   inherit (lib) dockerRunCmd flattenSet;
   inherit (stdenv) mkDerivation;
-  inherit (import ./common.nix) nginx nginxConfLayer dockerArgHints locales;
+  inherit (import ./common.nix { inherit pkgs; }) nginx nginxConfLayer dockerArgHints locales;
 in buildLayeredImage rec {
   name = "docker-registry.intr/webservices/nginx";
   topLayer = nginxConfLayer;
