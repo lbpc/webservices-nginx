@@ -1,2 +1,2 @@
-@Library('mj-shared-library') _
-buildWebService()
+@Library('mj-shared-library@buildWebService') _
+buildWebService(flake: true)

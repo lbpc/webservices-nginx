@@ -1,6 +1,6 @@
-with import ((import ./channels.nix).nixpkgs) {
-  overlays = (import ./channels.nix).overlays;
-};
+{ pkgs }:
+
+with pkgs;
 
 let
   inherit (builtins) foldl';
@@ -97,6 +97,7 @@ in rec {
     init = true;
     read_only = true;
     network = "host";
+    cap_add = [ "CAP_SYS_RESOURCE" ];
     volumes = [
       ({
         type = "bind";

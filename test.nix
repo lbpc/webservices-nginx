@@ -1,10 +1,14 @@
-with import (import ./channels.nix).nixpkgs {
+{ pkgs ? import (import ./channels.nix).nixpkgs {
   overlays = (import ./channels.nix).overlays;
-};
+}
+, keydir ? (fetchGit { url = "git@gitlab.intr:office/ssl-certificates"; ref = "master";}).outPath + "/ssl" 
+}:
+
+with pkgs;
 
 let
-  image = import ./default.nix;
-  keydir = (fetchGit {url = "git@gitlab.intr:office/ssl-certificates"; ref = "master";}).outPath + "/ssl" ;
+  inherit keydir;
+  image = import ./default.nix { inherit pkgs; };
   confdir = ./tests/conf;
   reloadNginx = writeScript "reloadNginx.sh" ''
   #!/bin/sh -eux

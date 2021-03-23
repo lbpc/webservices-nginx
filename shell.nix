@@ -1,10 +1,17 @@
-with import (import ./channels.nix).nixpkgs { };
+# SPDX-FileCopyrightText: 2020 Serokell <https://serokell.io/>
+#
+# SPDX-License-Identifier: MPL-2.0
 
-let common = import ./common.nix;
-in stdenv.mkDerivation {
-  name = "nginx-environment";
-  buildInputs = [
-    common.nginx
-    common.nginxConfLayer
-  ];
-}
+(import
+  (
+    let
+      lock = builtins.fromJSON (builtins.readFile ./flake.lock);
+    in
+    fetchTarball {
+      url = "https://github.com/edolstra/flake-compat/archive/${lock.nodes.flake-compat.locked.rev}.tar.gz";
+      sha256 = lock.nodes.flake-compat.locked.narHash;
+    }
+  )
+  {
+    src = ./.;
+  }).shellNix
