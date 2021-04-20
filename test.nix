@@ -240,7 +240,7 @@ in maketestNginx {
     (dockerNodeTest {
       description = "test protection with chromium";
       action = "succeed";
-      command = "strace -f -s 10000 google-chrome-stable --no-sandbox --headless --dump-dom http://test.ru/index.html 2>&1 | grep hello";
+      command = "chromium --no-sandbox --headless --dump-dom http://test.ru/index.html | grep hello";
     })
 
 
